@@ -38,6 +38,10 @@ public class Mapping {
         this.setMethod(method);
     }
     
+    public Mapping(){
+        
+    }
+    
     /*
         Get the list of mapping(class, method) from a given Class
     */
