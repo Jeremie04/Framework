@@ -5,6 +5,7 @@
 package etu2066.framework.servlet;
 
 import etu2066.framework.Mapping;
+import etu2066.framework.utilitaire.Utilitaire;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,13 +14,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author jeremie
  */
 public class FrontServlet extends HttpServlet {
-    HashMap<String,Mapping> mappingUrls; 
+
+    HashMap<String, Mapping> mappingUrls;
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -29,11 +34,36 @@ public class FrontServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        try {
+            processing();
+        } catch (IOException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public static void processing () throws IOException, ClassNotFoundException{
+        Utilitaire util = new Utilitaire();
+        Object[] classes = util.selectAllClasses();
+        for (int i = 0; i < classes.length; i++) {
+            Class cl = (Class) classes[i];
+            Mapping mapping = new Mapping();
+            Mapping[] list = mapping.getMapping(cl);
+            for (int j = 0; j < list.length; j++) {
+                mappingUrls.put("", list[j]);
+            }
+        }        
+    }
+    
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
-        
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -49,6 +79,7 @@ public class FrontServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
+
     }
 
     /**
