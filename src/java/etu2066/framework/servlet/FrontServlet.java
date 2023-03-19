@@ -34,7 +34,19 @@ public class FrontServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    public void processing () throws IOException, ClassNotFoundException{
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        try {
+            processing();
+        } catch (IOException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public static void processing () throws IOException, ClassNotFoundException{
         Utilitaire util = new Utilitaire();
         Object[] classes = util.selectAllClasses();
         for (int i = 0; i < classes.length; i++) {
