@@ -14,6 +14,14 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+
+
 /**
  *
  * @author jeremie
@@ -23,46 +31,47 @@ public class Utilitaire {
     /*
         get a list all of Existing class
     */
-    public Object[] selectAllClasses() throws IOException, ClassNotFoundException {
-        List<Class> classNames = new ArrayList<>();
-        /* get the absolute path */
-        //String rootDirectory = System.getProperty("user.dir");
-        File root = new File("etu2066/framework");
 
-        /* verify each element one by one */
-        for (File file : root.listFiles()) {
-            if (file.isDirectory()) {
-                String packageName = file.getName().replace("/", ".");
-                classNames.addAll(findClasses(file, packageName));
+    public Class[] getClasses() throws ClassNotFoundException {
+        ArrayList<Class> classes = new ArrayList<Class>();
+        // Get a File object for the package
+        File directory = null;
+        String pckgname = getConfigPackageValue("config.xml");
+        try {
+            ClassLoader cld = Thread.currentThread().getContextClassLoader();
+            if (cld == null) {
+                throw new ClassNotFoundException("Can't get class loader.");
+            }
+            String path = pckgname.replace('.', '/');
+            java.net.URL resource = cld.getResource(path);
+            if (resource == null) {
+                throw new ClassNotFoundException("No resource for " + path);
+            }
+            directory = new File(resource.getFile());
+        }
+        catch (NullPointerException x) {
+            throw new ClassNotFoundException(pckgname + " (" + directory + ") does not appear to be a valid package");
+        }
+        if (directory.exists()) {
+            // Get the list of the files contained in the package
+            String[] files = directory.list();
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].endsWith(".class")) {
+                    // removes the .class extension
+                    classes.add(Class.forName(pckgname + '.' + files[i].substring(0, files[i].length() - 6)));
+                }else if(files[i].isDirectory()){
+                    findClasses(files[i], pckgname + '.');
+                }
             }
         }
-
-        return classNames.toArray();
-    }
-
-    /*
-        find Name of class in the given directory
-    */
-    private static List<String> findClassesName(File directory, String packageName)
-            throws ClassNotFoundException {
-        List<String> classNames = new ArrayList<>();
-        if (!directory.exists()) {
-            return classNames;
+        else {
+            throw new ClassNotFoundException(pckgname + " does not appear to be a valid package");
         }
-        File[] files = directory.listFiles();
-        for (File file : files) {
-            /* call the function again if it is a folder */
-            if (file.isDirectory()) {
-                classNames.addAll(findClassesName(file, packageName + "." + file.getName()));
-            } 
-            /* add to the list if it a .class file */
-            else if (file.getName().endsWith(".class")) {
-                String className = packageName + '.' + file.getName().substring(0, file.getName().length() - 6);
-                classNames.add(className);
-            }
-        }
-        return classNames;
+        Class[] classesA = new Class[classes.size()];
+        classes.toArray(classesA);
+        return classesA;
     }
+    
 
     /*
         find class in the given directory
@@ -86,4 +95,20 @@ public class Utilitaire {
     }
 
 
+    private String getConfigPackageValue(String configFile){
+        File file = new File(configFile);
+        
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(file);
+
+        doc.getDocumentElement().normalize();
+
+        // Récupérer les valeurs de configuration
+
+        NodeList dbNodes = doc.getElementsByTagName("classPackage");
+        String packageName = dbNodes.item(0).getTextContent();
+
+        return packageName;
+    }
 }
