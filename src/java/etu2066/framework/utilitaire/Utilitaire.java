@@ -8,11 +8,16 @@ import etu2066.framework.Mapping;
 import etu2066.framework.annotation.Url;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.Class;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -54,11 +59,11 @@ public class Utilitaire {
         }
         if (directory.exists()) {
             // Get the list of the files contained in the package
-            String[] files = directory.list();
+            File[] files = directory.listFiles();
             for (int i = 0; i < files.length; i++) {
-                if (files[i].endsWith(".class")) {
+                if (files[i].getName().endsWith(".class")) {
                     // removes the .class extension
-                    classes.add(Class.forName(pckgname + '.' + files[i].substring(0, files[i].length() - 6)));
+                    classes.add(Class.forName(pckgname + '.' + files[i].getName().substring(0, files[i].getName().length() - 6)));
                 }else if(files[i].isDirectory()){
                     findClasses(files[i], pckgname + '.');
                 }
