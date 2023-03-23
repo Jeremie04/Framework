@@ -26,8 +26,8 @@ public class Utilitaire {
     public Object[] selectAllClasses() throws IOException, ClassNotFoundException {
         List<Class> classNames = new ArrayList<>();
         /* get the absolute path */
-        String rootDirectory = System.getProperty("user.dir");
-        File root = new File(rootDirectory);
+        //String rootDirectory = System.getProperty("user.dir");
+        File root = new File("etu2066/framework");
 
         /* verify each element one by one */
         for (File file : root.listFiles()) {
