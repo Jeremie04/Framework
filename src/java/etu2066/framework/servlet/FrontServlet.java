@@ -52,6 +52,7 @@ public class FrontServlet extends HttpServlet {
         } catch (Exception ex) {
             Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
     }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
