@@ -35,30 +35,34 @@ public class FrontServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         try {
-            processing();
+            Utilitaire util = new Utilitaire();
+            Object[] classes = util.selectAllClasses();
+            for (int i = 0; i < classes.length; i++) {
+                Class cl = (Class) classes[i];
+                Method[] method = cl.getDeclaredMethods();
+                for(int j=0; j<method.length; j++){
+                    if(method[j].getAnnotations()!=null){             
+                        Mapping mapping = new Mapping(cl.getSimpleName(), method[j].getName());
+                        mappingUrls.put(method[j].getAnnotation(Url.class).url(), mapping);
+                    }
+                }
+            }
         } catch (IOException | ClassNotFoundException ex) {
             Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
     }
-    
-    public static void processing () throws IOException, ClassNotFoundException{
-        Utilitaire util = new Utilitaire();
-        Object[] classes = util.selectAllClasses();
-        for (int i = 0; i < classes.length; i++) {
-            Class cl = (Class) classes[i];
-            Mapping mapping = new Mapping();
-            Mapping[] list = mapping.getMapping(cl);
-            for (int j = 0; j < list.length; j++) {
-                mappingUrls.put("", list[j]);
-            }
-        }        
-    }
-    
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
-
+        out.println(mappingUrls.keySet().size());
+        for(String k : mappingUrls.keySet()){
+            out.println(k);
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
