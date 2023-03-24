@@ -8,6 +8,7 @@ import etu2066.framework.Mapping;
 import etu2066.framework.annotation.Url;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.Class;
@@ -21,10 +22,14 @@ import java.nio.file.Paths;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.servlet.ServletContext;
 
 
 /**
@@ -37,11 +42,11 @@ public class Utilitaire {
         get a list all of Existing class
     */
 
-    public Class[] getClasses() throws ClassNotFoundException {
+    public Class[] getClasses(InputStream configInputStream) throws ClassNotFoundException, SAXException, IOException, ParserConfigurationException, Exception {
         ArrayList<Class> classes = new ArrayList<Class>();
         // Get a File object for the package
         File directory = null;
-        String pckgname = getConfigPackageValue("config.xml");
+        String pckgname = getConfigPackageValue(configInputStream);
         try {
             ClassLoader cld = Thread.currentThread().getContextClassLoader();
             if (cld == null) {
@@ -100,20 +105,23 @@ public class Utilitaire {
     }
 
 
-    private String getConfigPackageValue(String configFile){
-        File file = new File(configFile);
-        
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(file);
+    private String getConfigPackageValue(InputStream inputStream) throws Exception{
+        // Créer un parseur de document XML
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
 
-        doc.getDocumentElement().normalize();
+        // Analyser le document XML
+        Document document = builder.parse(inputStream);
 
-        // Récupérer les valeurs de configuration
+        // Fermer le flux d'entrée
+        inputStream.close();
 
-        NodeList dbNodes = doc.getElementsByTagName("classPackage");
-        String packageName = dbNodes.item(0).getTextContent();
+        // Récupérer les éléments du document XML
+        Element root = document.getDocumentElement();
+        NodeList node = root.getElementsByTagName("classPackage");
 
-        return packageName;
+        // Prendre l'élement dans package
+        String packageName = node.item(0).getTextContent();
+        return packageName;       
     }
 }

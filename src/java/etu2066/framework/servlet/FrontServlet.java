@@ -8,6 +8,7 @@ import etu2066.framework.Mapping;
 import etu2066.framework.annotation.Url;
 import etu2066.framework.utilitaire.Utilitaire;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import javax.servlet.ServletContext;
 /**
  *
  * @author jeremie
@@ -37,8 +39,11 @@ public class FrontServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         try {
+            ServletContext servletContext = getServletContext();
+            InputStream in = servletContext.getResourceAsStream("/WEB-INF/Config.xml");
+            // get the classes
             Utilitaire util = new Utilitaire();
-            Object[] classes = util.selectAllClasses();
+            Object[] classes = util.getClasses(in);
             for (int i = 0; i < classes.length; i++) {
                 Class cl = (Class) classes[i];
                 Method[] method = cl.getDeclaredMethods();
@@ -49,8 +54,6 @@ public class FrontServlet extends HttpServlet {
                     }
                 }
             }
-        } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
             Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -61,6 +64,9 @@ public class FrontServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
+        String currentURL = request.getRequestURI().replace(request.getContextPath(), "") + "?" + request.getQueryString();    
+        out.print(currentURL);
+        
         out.println(mappingUrls.keySet().size());
         for(String k : mappingUrls.keySet()){
             out.println(k);
